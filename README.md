@@ -94,7 +94,7 @@ To restore comments, run `:CommentHideRestore`, and the plugin will reinsert com
 
 #### Support language / framework
 
-You can click look [utils.lua](https://github.com/jiangxue-analysis/nvim.comment-hide/blob/main/lua/comment-hide/utils.lua#L20) file, Lnow supported languages:
+You can click look [utils.lua](https://github.com/my-rubbish/nvim.comment-hide/blob/main/lua/comment-hide/utils.lua#L20) file, Lnow supported languages:
 
 ```
 local comment_patterns = {
