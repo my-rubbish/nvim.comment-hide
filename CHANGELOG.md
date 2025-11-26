@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/my-rubbish/nvim.comment-hide/compare/v1.7.0...v1.8.0) (2025-11-26)
+
+
+### Features
+
+* add zsh ([9065724](https://github.com/my-rubbish/nvim.comment-hide/commit/9065724ac4c52fcc6584969a5910be8f2a781ec8))
+
 ## [1.7.0](https://github.com/jiangxue-analysis/nvim.comment-hide/compare/v1.6.0...v1.7.0) (2025-08-26)
 
 
