@@ -41,6 +41,7 @@ local comment_patterns = {
 	ruby = { single_patterns.hash, multi_patterns.ruby },
 	r = { single_patterns.hash },
 	nim = { single_patterns.hash },
+	zsh = { single_patterns.hash },
 	rust = { single_patterns.slash, multi_patterns.c },
 	sh = { single_patterns.hash },
 	html = { multi_patterns.html, single_patterns.slash, multi_patterns.c },
