@@ -14,7 +14,7 @@ You are use [lazy.nvim](https://github.com/folke/lazy.nvim):
 ```lua
 
 return {
-  "jiangxue-analysis/nvim.comment-hide",
+  "my-rubbish/nvim.comment-hide",
   name = "comment-hide",
   lazy = false,
   config = function()
