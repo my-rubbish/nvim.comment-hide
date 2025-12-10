@@ -94,98 +94,99 @@ local function restore_heredocs(content, heredocs)
 end
 
 local function is_in_string_or_special(line, pos, filetype, heredocs)
-  if filetype == "bash" or filetype == "sh" then
-    if pos == 1 and line:sub(1, 2) == "#!" then
-      return true
-    end
-    local before = line:sub(1, pos - 1)
-    local after = line:sub(pos)
-
-    if before:match("%${[^}]*$") and after:match("^[#%%]") then
-      return true
-    end
-
-    if before:match("%${$") and after:match("^#[^}]*}") then
-      return true
-    end
-  end
-
-  if filetype == "nix" and line:match("^%s*#!%/bin%/sh%s*$") then
+  --- shebang
+  if (filetype == "bash" or filetype == "sh" or filetype == "zsh")
+     and pos == 1 and line:sub(1, 2) == "#!" then
     return true
   end
 
-  if filetype == "elixir" then
-    local hash_pos = line:find("#", 1, true)
-    if hash_pos and line:sub(hash_pos + 1, hash_pos + 1) == "{" then
-      return true
-    end
-
-    local first_nonspace = line:match("^%s*(.)")
-    if first_nonspace == '"' then
-      return true
-    end
-  end
-
-  local in_string_single = false
-  local in_string_double = false
-  local in_backtick = false
-  local in_regex = false
-  local in_percent_string = false
-  local percent_char = nil
+  local in_sq = false      -- '
+  local in_dq = false      -- "
+  local in_bt = false      -- `
+  local in_param = false  -- ${}
+  local param_depth = 0
+  local in_cmd = false    -- $()
+  local cmd_depth = 0
+  local in_arith = false  -- $(())
+  local arith_depth = 0
 
   for i = 1, pos do
-    local char = line:sub(i, i)
-    local prev_char = i > 1 and line:sub(i - 1, i - 1) or ""
+    local c = line:sub(i, i)
+    local p = i > 1 and line:sub(i - 1, i - 1) or ""
+    local n = line:sub(i + 1, i + 1)
+    local nn = line:sub(i + 2, i + 2)
 
-    if not in_percent_string then
-      if char == "'" and prev_char ~= "\\" and not in_string_double and not in_backtick then
-        in_string_single = not in_string_single
-      elseif char == '"' and prev_char ~= "\\" and not in_string_single and not in_backtick then
-        in_string_double = not in_string_double
-      elseif char == "`" and prev_char ~= "\\" and not in_string_single and not in_string_double then -- NEW
-        in_backtick = not in_backtick
-      elseif
-          filetype == "ruby"
-          and char == "/"
-          and not in_string_single
-          and not in_string_double
-          and not in_backtick
-          and prev_char ~= "\\"
-      then
-        in_regex = not in_regex
+    -- backticks
+    if not in_sq and not in_dq and c == "`" and p ~= "\\" then
+      in_bt = not in_bt
+    end
+
+    if not in_bt then
+      -- single quote
+      if c == "'" and not in_dq and p ~= "\\" then
+        in_sq = not in_sq
+
+      -- double quote
+      elseif c == '"' and not in_sq and p ~= "\\" then
+        in_dq = not in_dq
       end
     end
 
-    if not in_percent_string and char == "%" then
-      local next_char = line:sub(i + 1, i + 1)
-      if next_char == "q" or next_char == "Q" then
-        local delim = line:sub(i + 2, i + 2)
-        if delim == "{" then
-          in_percent_string = true
-          percent_char = "}"
-        elseif delim == "(" then
-          in_percent_string = true
-          percent_char = ")"
-        elseif delim == "[" then
-          in_percent_string = true
-          percent_char = "]"
-        elseif delim == "<" then
-          in_percent_string = true
-          percent_char = ">"
+    if not in_sq and not in_dq and not in_bt then
+      -- ${ ... }
+      if not in_param and c == "$" and n == "{" then
+        in_param = true
+        param_depth = 1
+      elseif in_param then
+        if c == "{" then
+          param_depth = param_depth + 1
+        elseif c == "}" then
+          param_depth = param_depth - 1
+          if param_depth == 0 then
+            in_param = false
+          end
         end
       end
-    elseif in_percent_string and char == percent_char and prev_char ~= "\\" then
-      in_percent_string = false
+
+      -- $(())
+      if not in_arith and c == "$" and n == "(" and nn == "(" then
+        in_arith = true
+        arith_depth = 1
+      elseif in_arith then
+        if c == "(" then
+          arith_depth = arith_depth + 1
+        elseif c == ")" then
+          arith_depth = arith_depth - 1
+          if arith_depth == 0 then
+            in_arith = false
+          end
+        end
+      end
+
+      -- $()
+      if not in_cmd and not in_arith and c == "$" and n == "(" then
+        in_cmd = true
+        cmd_depth = 1
+      elseif in_cmd then
+        if c == "(" then
+          cmd_depth = cmd_depth + 1
+        elseif c == ")" then
+          cmd_depth = cmd_depth - 1
+          if cmd_depth == 0 then
+            in_cmd = false
+          end
+        end
+      end
     end
   end
 
-  for _, h in ipairs(heredocs) do
-    if line:find(h.delim, 1, true) then
-      return true
-    end
-  end
-
-  return in_string_single or in_string_double or in_backtick or in_regex or in_percent_string
+  return
+    in_sq
+    or in_dq
+    or in_bt
+    or in_param
+    or in_cmd
+    or in_arith
 end
 
 function M.extract_comments(content, filetype)
