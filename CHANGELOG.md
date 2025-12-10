@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.8.0](https://github.com/my-rubbish/nvim.comment-hide/compare/v1.7.0...v1.8.0) (2025-12-10)
+
+
+### Features
+
+* add hash test ([305cc50](https://github.com/my-rubbish/nvim.comment-hide/commit/305cc5002b37af571e5109bcd17217d7c4e8e6e1))
+* add zsh ([9065724](https://github.com/my-rubbish/nvim.comment-hide/commit/9065724ac4c52fcc6584969a5910be8f2a781ec8))
+
+
+### Code Refactoring
+
+* string and special context detection logic [#25](https://github.com/my-rubbish/nvim.comment-hide/issues/25) ([1e2a262](https://github.com/my-rubbish/nvim.comment-hide/commit/1e2a262540829a06dbee878bd7d3c1a97c03d357))
+
 ## [1.7.0](https://github.com/jiangxue-analysis/nvim.comment-hide/compare/v1.6.0...v1.7.0) (2025-08-26)
 
 
